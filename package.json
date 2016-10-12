@@ -1,0 +1,36 @@
+{
+  "name": "ts-jsonapi",
+  "version": "0.0.0",
+  "description": "JSON API (De) Serializer in Typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "compile": "tsc -p tsconfig.json -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohuk/ts-jsonapi.git"
+  },
+  "keywords": [
+    "typescript",
+    "jsonapi"
+  ],
+  "author": "Mohammad Umair Khan <mohammad.umair.k@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mohuk/ts-jsonapi/issues"
+  },
+  "homepage": "https://github.com/mohuk/ts-jsonapi#readme",
+  "devDependencies": {
+    "@types/lodash": "^4.14.37",
+    "chai": "^3.5.0",
+    "commitizen": "^2.8.6",
+    "mocha": "^3.1.2",
+    "mongoose": "^4.6.3",
+    "typescript": "^2.0.3"
+  },
+  "dependencies": {
+    "inflected": "^1.1.6",
+    "lodash": "^4.16.4"
+  }
+}
