@@ -1,8 +1,7 @@
-import { mapKeys, find, transform, isNull, each, isArray, isPlainObject, isUndefined, mapValues, isFunction, pick, keys } from 'lodash';
-import { SerializerOptions } from './serializer-options';
+import * as _ from 'lodash';
 import { Links } from './types';
 import { Inflector } from './inflector';
-
+import { SerializerOptions } from './serializer-options';
 
 export class SerializerUtils {
   constructor(
@@ -18,7 +17,7 @@ export class SerializerUtils {
     if (opts && opts.ref) {
       if (!dest.relationships) { dest.relationships = {}; }
 
-      if (isArray(current[attribute])) {
+      if (_.isArray(current[attribute])) {
         data = current[attribute].map(function (item) {
           return this.serializeRef(item, current, attribute, opts);
         }, this);
@@ -42,8 +41,8 @@ export class SerializerUtils {
           this.getMeta(current[attribute], opts.relationshipMeta);
       }
     } else {
-      if (isArray(current[attribute])) {
-        if (current[attribute].length && isPlainObject(current[attribute][0])) {
+      if (_.isArray(current[attribute])) {
+        if (current[attribute].length && _.isPlainObject(current[attribute][0])) {
           data = current[attribute].map((item) => {
             return this.serializeNested(item, current, attribute, opts);
           });
@@ -52,7 +51,7 @@ export class SerializerUtils {
         }
 
         dest.attributes[this.keyForAttribute(attribute)] = data;
-      } else if (isPlainObject(current[attribute])) {
+      } else if (_.isPlainObject(current[attribute])) {
         data = this.serializeNested(current[attribute], current, attribute, opts);
         dest.attributes[this.keyForAttribute(attribute)] = data;
       } else {
@@ -83,14 +82,14 @@ export class SerializerUtils {
       included.attributes = this.pick(dest, includedAttrs);
     }
 
-    relationships.forEach(function (relationship) {
+    _.each(relationships, relationship => {
       if (dest && this.isComplexType(dest[relationship])) {
         this.serialize(included, dest, relationship, opts[relationship]);
       }
-    }, this);
+    });
 
     if (includedAttrs.length &&
-      (isUndefined(opts.included) || opts.included)) {
+      (_.isUndefined(opts.included) || opts.included)) {
       if (opts.includedLinks) {
         included.links = this.getLinks(dest, opts.includedLinks);
       }
@@ -114,7 +113,7 @@ export class SerializerUtils {
         return !opts[attr];
       });
     } else {
-      attributes = keys(dest);
+      attributes = _.keys(dest);
     }
 
     let ret: any = {};
@@ -122,7 +121,7 @@ export class SerializerUtils {
       ret.attributes = this.pick(dest, attributes);
     }
 
-    embeds.forEach((embed) => {
+    _.each(embeds, embed => {
       if (this.isComplexType(dest[embed])) {
         this.serialize(ret, dest, embed, opts[embed]);
       }
@@ -131,7 +130,7 @@ export class SerializerUtils {
   }
 
   perform(): any {
-    if( isNull(this.record) ){
+    if(_.isNull(this.record)){
         return null;
     }
 
@@ -146,7 +145,7 @@ export class SerializerUtils {
       data.links = this.getLinks(this.record, this.opts.dataLinks);
     }
 
-    each(this.opts.attributes, (attribute) => {
+    _.each(this.opts.attributes, (attribute) => {
       var splittedAttributes = attribute.split(':');
 
       if (splittedAttributes[0] in this.record ||
@@ -166,15 +165,15 @@ export class SerializerUtils {
   }
 
   private keyForAttribute(attribute: any): any {
-    if (isPlainObject(attribute)) {
-      return transform(attribute, (result, value, key) => {
+    if (_.isPlainObject(attribute)) {
+      return _.transform(attribute, (result, value, key) => {
         if (this.isComplexType(value)) {
           result[this.keyForAttribute(key)] = this.keyForAttribute(value);
         } else {
           result[this.keyForAttribute(key)] = value;
         }
       });
-    } else if (isArray(attribute)) {
+    } else if (_.isArray(attribute)) {
       return attribute.map((attr) => {
         if (this.isComplexType(attr)) {
           return this.keyForAttribute(attr);
@@ -183,7 +182,7 @@ export class SerializerUtils {
         }
       });
     } else {
-      if (isFunction(this.opts.keyForAttribute)) {
+      if (_.isFunction(this.opts.keyForAttribute)) {
         return this.opts.keyForAttribute(attribute);
       } else {
         return Inflector.caserize(attribute, {
@@ -194,14 +193,14 @@ export class SerializerUtils {
   }
 
   private isComplexType(obj: any) {
-    return isArray(obj) || isPlainObject(obj);
+    return _.isArray(obj) || _.isPlainObject(obj);
   }
 
   private getRef(current: any, item: any, opts: any): string | string[] {
-    if (isFunction(opts.ref)) {
+    if (_.isFunction(opts.ref)) {
       return opts.ref(current, item);
     } else if (opts.ref === true) {
-      if (isArray(item)) {
+      if (_.isArray(item)) {
         return item.map(function (val) {
           return String(val);
         });
@@ -221,16 +220,16 @@ export class SerializerUtils {
     let type: string;
     attrVal = attrVal || {};
 
-    if (isFunction(this.opts.typeForAttribute)) {
+    if (_.isFunction(this.opts.typeForAttribute)) {
       type = this.opts.typeForAttribute(str, attrVal);
     }
 
     // If the pluralize option is on, typeForAttribute returned undefined or wasn't used
-    if ((isUndefined(this.opts.pluralizeType) || this.opts.pluralizeType) && isUndefined(type)) {
+    if ((_.isUndefined(this.opts.pluralizeType) || this.opts.pluralizeType) && _.isUndefined(type)) {
       type = Inflector.pluralize(str);
     }
 
-    if (isUndefined(type)) {
+    if (_.isUndefined(type)) {
       type = str;
     }
 
@@ -238,8 +237,8 @@ export class SerializerUtils {
   }
 
   private getLinks(current: any, links: Links, dest?: any) {
-    return mapValues(links, (value) => {
-      if (isFunction(value)) {
+    return _.mapValues(links, (value) => {
+      if (_.isFunction(value)) {
         return value(this.record, current, dest);
       } else {
         return value;
@@ -248,8 +247,8 @@ export class SerializerUtils {
   }
 
   private getMeta(current: any, meta: any) {
-    return mapValues(meta, (value) => {
-      if (isFunction(value)) {
+    return _.mapValues(meta, (value) => {
+      if (_.isFunction(value)) {
         return value(this.record, current);
       } else {
         return value;
@@ -258,13 +257,13 @@ export class SerializerUtils {
   }
 
   private pick(obj: any, attributes: any) {
-    return mapKeys(pick<any, any>(obj, attributes), (value, key) => {
+    return _.mapKeys(_.pick<any, any>(obj, attributes), (value, key) => {
       return this.keyForAttribute(key);
     });
   }
 
   private isCompoundDocumentIncluded(included: any, item: any) {
-    return find(this.payload.included, { id: item.id, type: item.type });
+    return _.find(this.payload.included, { id: item.id, type: item.type });
   }
 
   private pushToIncluded(dest: any, include: any) {
