@@ -1,6 +1,7 @@
 import { Links, AttributesObject, caseOptions, RelationshipMeta} from './types';
 
 export interface SerializerOptions {
+  [index: string]: any,
   id?: string,
   topLevelLinks: Links,
   attributes?: Array<string>,

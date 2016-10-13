@@ -5,7 +5,7 @@ import { SerializerOptions } from './serializer-options';
 
 export class SerializerUtils {
   constructor(
-    public collectionName,
+    public collectionName: string,
     public record: any,
     public payload: any,
     public opts: SerializerOptions
@@ -18,9 +18,9 @@ export class SerializerUtils {
       if (!dest.relationships) { dest.relationships = {}; }
 
       if (_.isArray(current[attribute])) {
-        data = current[attribute].map(function (item) {
+        data = current[attribute].map((item: any) => {
           return this.serializeRef(item, current, attribute, opts);
-        }, this);
+        });
       } else {
         data = this.serializeRef(current[attribute], current, attribute,
           opts);
@@ -43,7 +43,7 @@ export class SerializerUtils {
     } else {
       if (_.isArray(current[attribute])) {
         if (current[attribute].length && _.isPlainObject(current[attribute][0])) {
-          data = current[attribute].map((item) => {
+          data = current[attribute].map((item: any) => {
             return this.serializeNested(item, current, attribute, opts);
           });
         } else {
@@ -64,15 +64,15 @@ export class SerializerUtils {
     var id = this.getRef(current, dest, opts);
     var type = this.getType(attribute, dest);
 
-    var relationships = [];
-    var includedAttrs = [];
+    var relationships: Array<any> = [];
+    var includedAttrs: Array<any> = [];
 
     if (opts.attributes) {
-      relationships = opts.attributes.filter(function (attr) {
+      relationships = opts.attributes.filter((attr: any) => {
         return opts[attr];
       });
 
-      includedAttrs = opts.attributes.filter(function (attr) {
+      includedAttrs = opts.attributes.filter((attr: any) => {
         return !opts[attr];
       });
     }
@@ -101,8 +101,8 @@ export class SerializerUtils {
   };
 
   serializeNested (dest: any, current: any, attribute: string, opts: SerializerOptions): any {
-    let embeds = [];
-    let attributes = [];
+    let embeds: Array<any> = [];
+    let attributes: Array<any> = [];
 
     if (opts && opts.attributes) {
       embeds = opts.attributes.filter((attr) => {

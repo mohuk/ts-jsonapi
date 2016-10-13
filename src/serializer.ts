@@ -28,7 +28,7 @@ export class Serializer {
   collection(data: any) {
     this.payload.data = [];
 
-    data.forEach((record) => {
+    data.forEach((record: any) => {
       var serializerUtils = new SerializerUtils(this.collectionName, record,
         this.payload, this.opts);
       this.payload.data.push(serializerUtils.perform());
