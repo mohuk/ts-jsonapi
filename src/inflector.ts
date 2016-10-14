@@ -1,14 +1,9 @@
 import * as inflector from 'inflected';
-import { caseOptions } from './types';
-
-export interface InflectorOptions {
-  keyForAttribute: caseOptions
-}
 
 export namespace Inflector {
-  export function caserize(attribute: string, opts: InflectorOptions): string {
+  export function caserize(attribute: string, conversionCase: string): string {
     attribute = inflector.underscore(attribute);
-    switch (opts.keyForAttribute) {
+    switch (conversionCase) {
       case 'dash-case':
       case 'lisp-case':
       case 'spinal-case':

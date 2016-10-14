@@ -108,7 +108,7 @@ export class DeserializerUtils {
       if (_.isFunction(this.opts.keyForAttribute)) {
         return this.opts.keyForAttribute(attribute);
       } else {
-        return Inflector.caserize(attribute, { keyForAttribute: this.opts.keyForAttribute});
+        return Inflector.caserize(attribute, this.opts.keyForAttribute);
       }
     }
   }
