@@ -1,11 +1,11 @@
-import { Links, AttributesObject, caseOptions, RelationshipMeta} from './types';
+import { Links, AttributesObject, caseOptions, RelationshipMeta, keyForAttributeFunction} from './types';
 
 export interface SerializerOptions {
   [index: string]: any,
-  id: string,
+  id?: string,
   attributes: Array<string>,
   topLevelLinks?: Links,
-  keyForAttribute?: (attribute: string) => string | caseOptions,
+  keyForAttribute?: caseOptions | keyForAttributeFunction,
   ref?: string | boolean | Function,
   typeForAttribute?: (attribute: any, user: any) => any,
   nullIfMissing?: boolean,

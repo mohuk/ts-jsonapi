@@ -12,5 +12,8 @@ export declare type LinkFunction = (links: any, current?: any, parent?: any) => 
 
 export declare interface AttributesObject {
   [key: string]: string
-};
+}
+
 export declare type RelationshipMetaFunction = (record: any) => string;
+
+export declare type keyForAttributeFunction = (attribute: string) => string;
