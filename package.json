@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc -w",
     "test": "npm run compile && mocha",
-    "compile": "npm run compile",
+    "compile": "tsc",
     "prepublish": "npm run compile"
   },
   "repository": {
