@@ -25,24 +25,20 @@ export class DeserializerUtils {
   }
 
   private findIncluded(relationshipData: any) {
-    return new Promise<any>((resolve) => {
-      if (!this.jsonapi.included || !relationshipData) { resolve(null); }
+    if (!this.jsonapi.included || !relationshipData) {
+      return null;
+    }
 
-      let included = _.find(this.jsonapi.included, {
-        id: relationshipData.id,
-        type: relationshipData.type
-      });
-
-      if (included) {
-        return Promise
-          .all([this.extractAttributes(included), this.extractRelationships(included)])
-          .then(([attributes, relationships]) => {
-            resolve(_.extend(attributes, relationships));
-          })
-      } else {
-        return resolve(null);
-      }
+    let included = _.find(this.jsonapi.included, {
+      id: relationshipData.id,
+      type: relationshipData.type
     });
+
+    if (included) {
+      return _.extend(this.extractAttributes(included), this.extractRelationships(included));
+    } else {
+      return null;
+    }
   }
 
   private extractAttributes(from: any) {
@@ -59,32 +55,28 @@ export class DeserializerUtils {
 
     let dest: any = {};
 
-    return Promise.all(Object.keys(from.relationships).map((key: string) => {
+    Object.keys(from.relationships)
+      .map((key: string) => {
         let relationship = from.relationships[key];
 
         if (relationship.data === null) {
           return dest[this.keyForAttribute(key)] = null;
         } else if (_.isArray(relationship.data)) {
-          return Promise.all(relationship.data
-            .map((relationshipData: Array<any>): Promise<any> => {
+          let includes = relationship.data
+            .map((relationshipData: Array<any>) => {
               return this.extractIncludes(relationshipData);
-            }))
-            .then((includes: any) => {
-              if (includes) {
-                dest[this.keyForAttribute(key)] = includes;
-              }
             });
+          if (includes) {
+              dest[this.keyForAttribute(key)] = includes;
+          }
         } else {
-          return this.extractIncludes(relationship.data)
-            .then((include: any) => {
-              if (include) {
-                return dest[this.keyForAttribute(key)] = include;
-
-              }
-            });
+          let includes = this.extractIncludes(relationship.data)
+          if (includes) {
+            return dest[this.keyForAttribute(key)] = includes;
+          }
         }
-      }))
-      .then(() => dest);
+      });
+      return dest;
   }
 
   private keyForAttribute(attribute: any): any{
@@ -114,26 +106,12 @@ export class DeserializerUtils {
   }
 
   private extractIncludes(relationshipData: any) {
-    return this.findIncluded(relationshipData)
-      .then((included) => {
-        let valueForRelationship = this.getValueForRelationship(relationshipData,
-          included);
-        if (valueForRelationship && _.isFunction(valueForRelationship.then)) {
-          return valueForRelationship
-            .then((value: any) => {
-              return value;
-            });
-        } else {
-          return valueForRelationship;
-        }
-      });
+    let included = this.findIncluded(relationshipData)
+    let valueForRelationship = this.getValueForRelationship(relationshipData, included);
+    return valueForRelationship;
   }
 
-  perform(): Promise<any> {
-    return Promise
-      .all([this.extractAttributes(this.data), this.extractRelationships(this.data)])
-      .then(([attributes, relationships]) => {
-        return _.extend(attributes, relationships);
-      });
+  perform(): any {
+    return _.extend(this.extractAttributes(this.data), this.extractRelationships(this.data));
   }
 }

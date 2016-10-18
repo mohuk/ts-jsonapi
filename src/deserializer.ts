@@ -6,32 +6,22 @@ export class Deserializer {
     public opts: any = {}
   ){}
 
-  deserialize(jsonapi: any, callback?: Function) {
+  deserialize(jsonapi: any) {
     if (_.isArray(jsonapi.data)) {
-      return this.collection(jsonapi, callback);
+      return this.collection(jsonapi);
     } else {
-      return this.resource(jsonapi, callback);
+      return this.resource(jsonapi);
     }
   }
 
-  collection(jsonapi: any, callback?: Function) {
-    let promises: Array<Promise<any>> = [];
-
-    promises = _.map(jsonapi.data, (d) => {
+  collection(jsonapi: any) {
+    return _.map(jsonapi.data, (d) => {
       return new DeserializerUtils(jsonapi, d, this.opts).perform();
     });
-
-    return Promise.all(promises)
-      .then((response) => {
-        return _.isFunction(callback) ? callback(null, response) : response
-      });
   }
 
-  resource(jsonapi: any, callback?: Function) {
+  resource(jsonapi: any) {
     return new DeserializerUtils(jsonapi, jsonapi.data, this.opts)
-      .perform()
-      .then((result: any) => {
-        return _.isFunction(callback) ? callback(null, result) : result;
-      });
+      .perform();
   }
 }
