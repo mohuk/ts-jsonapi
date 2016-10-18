@@ -3,6 +3,8 @@
   "version": "2.0.0",
   "description": "JSON API (De) Serializer in Typescript",
   "main": "lib/index.js",
+  "module": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "start": "tsc -w",
     "test": "npm run compile && mocha",
