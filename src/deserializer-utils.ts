@@ -9,6 +9,8 @@ export class DeserializerUtils {
     public opts: any
   ){}
 
+  private alreadyIncluded: any[] = [];
+
   private isComplexType(obj: any) {
     return _.isArray(obj) || _.isPlainObject(obj);
   }
@@ -24,7 +26,7 @@ export class DeserializerUtils {
     }
   }
 
-  private findIncluded(relationshipData: any) {
+  private findIncluded(relationshipData: any, relationshipName: any, from: any) {
     if (!this.jsonapi.included || !relationshipData) {
       return null;
     }
@@ -33,6 +35,23 @@ export class DeserializerUtils {
       id: relationshipData.id,
       type: relationshipData.type
     });
+
+    var includedObject = {
+      to: {
+        id: from.id,
+        type: from.type
+      },
+      from: Object.assign({}, relationshipData),
+      relation: relationshipName
+    };
+
+    // Check if the include is already processed (prevent circular references).
+    if (_.find(this.alreadyIncluded, includedObject)) {
+      return null;
+    } else {
+      this.alreadyIncluded.push(includedObject);
+    }
+
 
     if (included) {
       return _.extend(this.extractAttributes(included), this.extractRelationships(included));
@@ -64,13 +83,13 @@ export class DeserializerUtils {
         } else if (_.isArray(relationship.data)) {
           let includes = relationship.data
             .map((relationshipData: Array<any>) => {
-              return this.extractIncludes(relationshipData);
+              return this.extractIncludes(relationshipData, key, from);
             });
           if (includes) {
               dest[this.keyForAttribute(key)] = includes;
           }
         } else {
-          let includes = this.extractIncludes(relationship.data)
+          let includes = this.extractIncludes(relationship.data, key, from)
           if (includes) {
             return dest[this.keyForAttribute(key)] = includes;
           }
@@ -105,8 +124,8 @@ export class DeserializerUtils {
     }
   }
 
-  private extractIncludes(relationshipData: any) {
-    let included = this.findIncluded(relationshipData)
+  private extractIncludes(relationshipData: any, relationshipName: any, from: any) {
+    let included = this.findIncluded(relationshipData, relationshipName, from)
     let valueForRelationship = this.getValueForRelationship(relationshipData, included);
     return valueForRelationship;
   }
