@@ -5,7 +5,7 @@ export interface SerializerOptions {
   id: string,
   attributes: Array<string>,
   topLevelLinks?: Links,
-  keyForAttribute?: (attribute: string) => string | caseOptions,
+  keyForAttribute?: ((attribute: string) => string) | caseOptions,
   ref?: string | boolean | Function,
   typeForAttribute?: (attribute: any, user: any) => any,
   nullIfMissing?: boolean,
