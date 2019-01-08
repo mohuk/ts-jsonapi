@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
-
-import { Inflector } from './inflector';
 import { Links } from './types';
+import { Inflector } from './inflector';
 import { SerializerOptions } from './serializer-options';
 
 export class SerializerUtils {
