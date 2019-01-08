@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
-import { Links } from './types';
+
 import { Inflector } from './inflector';
+import { Links } from './types';
 import { SerializerOptions } from './serializer-options';
 
 export class SerializerUtils {
@@ -143,6 +144,11 @@ export class SerializerUtils {
     // Data links.
     if (this.opts.dataLinks) {
       data.links = this.getLinks(this.record, this.opts.dataLinks);
+    }
+
+    // Data meta.
+    if (this.opts.dataMeta) {
+      data.meta = this.getMeta(this.record, this.opts.dataMeta);
     }
 
     _.each(this.opts.attributes, (attribute) => {

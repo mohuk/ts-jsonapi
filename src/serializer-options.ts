@@ -1,4 +1,4 @@
-import { Links, AttributesObject, caseOptions, RelationshipMeta} from './types';
+import { AttributesObject, Links, RelationshipMeta, caseOptions } from './types';
 
 export interface SerializerOptions {
   [index: string]: any,
@@ -14,6 +14,7 @@ export interface SerializerOptions {
   relationshipLinks?: Links,
   relationshipMeta?: RelationshipMeta,
   dataLinks?: Links,
+  dataMeta?: any,
   included?: boolean,
   includedLinks?: Links,
   embed?: boolean,
