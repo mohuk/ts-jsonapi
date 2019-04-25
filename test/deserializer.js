@@ -370,13 +370,14 @@ describe('JSON API Deserializer', function () {
           }
         }});
 
-        expect(json[1]).to.have.key('id', 'first-name', 'last-name','address');
+        expect(json[1]).to.have.key('id', 'first-name', 'last-name', 'address');
 
         expect(json[1].address).to.be.eql({
           id: '54735697e16624ba1eee36bf',
           'address-line1': '361 Shady Lane',
           'zip-code': '23185',
-          country: 'USA'
+          country: 'USA',
+          lock: {id: "2"}
         });
 
         done();
@@ -541,6 +542,34 @@ describe('JSON API Deserializer', function () {
           'address-line1': '406 Madison Court',
           'zip-code': '49426',
           country: 'USA'
+        });
+
+        done(null, json);
+      });
+
+      it('return id by default if no included found', function (done) {
+        var dataSet = {
+          data: [{
+            type: 'users',
+            id: '54735750e16638ba1eee59cb',
+            attributes: {
+              'first-name': 'Yevhen',
+              'last-name': 'Baidiuk'
+            },
+            relationships: {
+              address: {
+                data: { type: 'address', id: '66635722e16620ba1eee36af' }
+              }
+            }
+          }]
+        };
+
+        var json = new JSONAPIDeserializer().deserialize(dataSet);
+
+        expect(json).to.be.an('array').with.length(1);
+        expect(json[0]).to.have.key('id', 'first-name', 'last-name', 'address');
+        expect(json[0].address).to.be.eql({
+          id: '66635722e16620ba1eee36af'
         });
 
         done(null, json);
@@ -778,6 +807,9 @@ describe('JSON API Deserializer', function () {
             address_line1: '406 Madison Court',
             zip_code: '49426',
             id: '54735722e16620ba1eee36af',
+            country: {
+              id: "54735722e16609ba1eee36af"
+            }
           }
         }
       });
