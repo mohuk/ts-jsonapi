@@ -195,6 +195,40 @@ describe('Options', function () {
     });
   });
 
+  describe('dataMeta', function () {
+    it('should set the dataMeta key (plain)', function (done) {
+      var dataSet = {
+        id: '1',
+        firstName: 'Sandro',
+        lastName: 'Munda',
+      };
+
+      var json = new JSONAPISerializer('user', {
+        attributes: ['firstName', 'lastName'],
+        dataMeta: { count: 1 }
+      }).serialize(dataSet);
+
+      expect(json.data.meta.count).equal(1);
+      done();
+    });
+
+    it('should set the dataMeta key (function)', function (done) {
+      var dataSet = {
+        id: '1',
+        firstName: 'Sandro',
+        lastName: 'Munda',
+      };
+
+      var json = new JSONAPISerializer('user', {
+        attributes: ['firstName', 'lastName'],
+        dataMeta: { count: function(record) { return 1; } }
+      }).serialize(dataSet);
+
+      expect(json.data.meta.count).equal(1);
+      done();
+    });
+  });
+
   describe('included', function () {
     it('should include or not the compound documents', function (done) {
       var dataSet = [{

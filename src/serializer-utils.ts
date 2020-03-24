@@ -145,6 +145,11 @@ export class SerializerUtils {
       data.links = this.getLinks(this.record, this.opts.dataLinks);
     }
 
+    // Data meta.
+    if (this.opts.dataMeta) {
+      data.meta = this.getMeta(this.record, this.opts.dataMeta);
+    }
+
     _.each(this.opts.attributes, (attribute) => {
       var splittedAttributes = attribute.split(':');
 

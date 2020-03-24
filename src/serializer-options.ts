@@ -14,6 +14,7 @@ export interface SerializerOptions {
   relationshipLinks?: Links,
   relationshipMeta?: RelationshipMeta,
   dataLinks?: Links,
+  dataMeta?: any,
   included?: boolean,
   includedLinks?: Links,
   embed?: boolean,
