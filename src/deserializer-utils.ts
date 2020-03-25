@@ -21,6 +21,8 @@ export class DeserializerUtils {
         .valueForRelationship;
 
       return valueForRelationshipFct(relationshipData, included);
+    } else if (!included && relationshipData) {
+        return {id: relationshipData.id}
     } else {
       return included;
     }
