@@ -2073,5 +2073,15 @@ describe('JSON API Serializer', function () {
 
       done(null, json);
     });
+
+    it('should convert Date to string', function (done) {
+      var dataSet = {
+        isoDate: new Date('2019-07-08')
+      };
+
+      var json = new JSONAPISerializer('users', { attributes: ['isoDate'] }).serialize(dataSet);
+      expect(json.data.attributes).to.have.property('iso-date').that.is.eql('2019-07-08T00:00:00.000Z');
+      done(null, json);
+    });
   });
 });
