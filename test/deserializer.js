@@ -7,7 +7,7 @@ var JSONAPIDeserializer = require('../lib').Deserializer;
 
 describe('JSON API Deserializer', function () {
   describe('simple JSONAPI array document', function () {
-    it('should returns attributes', function (done) {
+    it('should returns data and top level meta', function (done) {
       var dataSet = {
         data: [{
           type: 'users',
@@ -21,17 +21,21 @@ describe('JSON API Deserializer', function () {
       };
 
       var json = new JSONAPIDeserializer().deserialize(dataSet);
-      expect(json).to.be.an('array').with.length(2);
-      expect(json[0]).to.be.eql({
+      expect(json).to.be.an('object');
+
+      expect(json.data).to.be.an('array').with.length(2);
+      expect(json.data[0]).to.be.eql({
         id: '54735750e16638ba1eee59cb',
         'first-name': 'Sandro',
         'last-name': 'Munda'
       });
-      expect(json[1]).to.be.eql({
+      expect(json.data[1]).to.be.eql({
         id: '5490143e69e49d0c8f9fc6bc',
         'first-name': 'Lawrence',
         'last-name': 'Bennett'
       });
+
+      expect(json.meta).to.be.eql({});
 
       done(null, json);
     });
@@ -48,14 +52,48 @@ describe('JSON API Deserializer', function () {
       };
 
       var json = new JSONAPIDeserializer().deserialize(dataSet);
-      expect(json).to.be.eql({
+
+      expect(json.data).to.be.eql({
         id: '54735750e16638ba1eee59cb',
         'first-name': 'Sandro',
         'last-name': 'Munda'
       });
 
+      expect(json.meta).to.be.eql({});
+
       done(null, json);
     });
+
+    it('should returns top level meta object', function (done) {
+      var dataSet = {
+        data: {
+          type: 'users',
+          id: '54735750e16638ba1eee59cb',
+          attributes: { 'first-name': 'Sandro', 'last-name': 'Munda' }
+        },
+        meta: {
+          bank_name: 'SuperBank',
+          'bank-account': '100$'
+        }
+      }
+      
+      var json = new JSONAPIDeserializer({
+        keyForAttribute: 'camelCase'
+      }).deserialize(dataSet);
+
+      expect(json.data).to.be.eql({
+        id: '54735750e16638ba1eee59cb',
+        firstName: 'Sandro',
+        lastName: 'Munda'
+      });
+
+      expect(json.meta).to.be.eql({
+        bankName: 'SuperBank',
+        bankAccount: '100$'
+      });
+
+      done(null, json);
+    })
 
     it('should return camelCase attributes', function (done) {
       var dataSet = {
@@ -69,10 +107,41 @@ describe('JSON API Deserializer', function () {
       var json = new JSONAPIDeserializer({
         keyForAttribute: 'camelCase'
       }).deserialize(dataSet);
-      expect(json).to.be.eql({
+
+      expect(json.data).to.be.eql({
         id: '54735750e16638ba1eee59cb',
         firstName: 'Sandro',
         lastName: 'Munda'
+      });
+
+      done(null, json);
+    });
+
+    it('should return meta for resource if it exists', function (done) {
+      var dataSet = {
+        data: {
+          type: 'users',
+          id: '54735750e16638ba1eee59cb',
+          attributes: { 'first-name': 'Sandro', 'last-name': 'Munda' },
+          meta: {
+            bank_account: '100$',
+            'bank-Name': 'SuperBank'
+          }
+        }
+      };
+
+      var json = new JSONAPIDeserializer({
+        keyForAttribute: 'camelCase'
+      }).deserialize(dataSet);
+
+      expect(json.data).to.be.eql({
+        id: '54735750e16638ba1eee59cb',
+        firstName: 'Sandro',
+        lastName: 'Munda',
+        meta: {
+          bankAccount: '100$',
+          bankName: 'SuperBank'
+        }
       });
 
       done(null, json);
@@ -96,6 +165,10 @@ describe('JSON API Deserializer', function () {
               'book-title': 'Steve Jobs',
               isbn: '978-1451648546'
             }]
+          },
+          meta: {
+            metaFieldOne: true,
+            metaFieldTwo: true
           }
         }, {
           type: 'users',
@@ -110,14 +183,18 @@ describe('JSON API Deserializer', function () {
               'book-title': 'Einstein: His Life and Universe',
               isbn: '978-0743264747'
             }]
+          },
+          meta: {
+            metaFieldOne: false,
+            metaFieldTwo: false
           }
         }]
       };
 
-      var json = new JSONAPIDeserializer({ keyForAttribute: 'camelCase' }).deserialize(dataSet);
+      var { data: json, meta: topLevelMeta } = new JSONAPIDeserializer({ keyForAttribute: 'camelCase' }).deserialize(dataSet);
       expect(json).to.be.an('array').with.length(2);
 
-      expect(json[0]).to.have.key('id', 'firstName', 'lastName', 'books');
+      expect(json[0]).to.have.key('id', 'firstName', 'lastName', 'books', 'meta');
       expect(json[0].books).to.be.an('array');
       expect(json[0].books[0]).to.be.eql({
         bookTitle: 'Tesla, SpaceX.',
@@ -128,8 +205,15 @@ describe('JSON API Deserializer', function () {
         isbn: '978-1451648546'
       });
 
+      expect(json[1].meta).to.be.eql({
+        metaFieldOne: false,
+        metaFieldTwo: false
+      })
+
       expect(json[1]).to.have.key('id', 'firstName', 'lastName',
-        'books');
+        'books', 'meta');
+    
+      expect(topLevelMeta).to.be.eql({});
       done(null, json);
     });
   });
@@ -178,10 +262,14 @@ describe('JSON API Deserializer', function () {
             'zip-code': '23185',
             country: 'USA'
           }
-        }]
+        }],
+        meta: {
+          'some-meta-field-1': 1,
+          'some-meta-field-2': 2
+        }
       };
 
-      var json = new JSONAPIDeserializer().deserialize(dataSet);
+      var { data: json, meta } = new JSONAPIDeserializer().deserialize(dataSet);
       expect(json).to.be.an('array').with.length(2);
 
       expect(json[0]).to.have.key('id', 'first-name', 'last-name',
@@ -203,6 +291,11 @@ describe('JSON API Deserializer', function () {
         'zip-code': '23185',
         country: 'USA'
       });
+
+      expect(meta).to.be.eql({
+        'some-meta-field-1': 1,
+        'some-meta-field-2': 2
+      })
 
       done(null, json);
     });
@@ -253,7 +346,7 @@ describe('JSON API Deserializer', function () {
         }]
       };
 
-      var json = new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(dataSet);
+      var { data: json } = new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(dataSet);
       expect(json).to.be.an('array').with.length(2);
 
       expect(json[0]).to.have.key('id', 'firstName', 'lastName',
@@ -351,7 +444,7 @@ describe('JSON API Deserializer', function () {
           }]
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).to.be.an('array').with.length(2);
 
         expect(json[0]).to.have.key('id', 'first-name', 'last-name','address');
@@ -447,7 +540,7 @@ describe('JSON API Deserializer', function () {
           }]
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).to.be.an('array').with.length(2);
 
         expect(json[0]).to.have.key('id', 'first-name', 'last-name',
@@ -508,7 +601,7 @@ describe('JSON API Deserializer', function () {
           }]
         };
 
-        var json = new JSONAPIDeserializer({
+        var { data: json } = new JSONAPIDeserializer({
           addresses: {
             valueForRelationship: function (relationship) {
               return {
@@ -563,7 +656,7 @@ describe('JSON API Deserializer', function () {
           }
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).eql({
           id: '54735750e16638ba1eee59cb',
           'first-name': 'Sandro',
@@ -588,7 +681,7 @@ describe('JSON API Deserializer', function () {
           }
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).eql({
           id: '54735750e16638ba1eee59cb',
           'first-name': 'Sandro',
@@ -636,7 +729,7 @@ describe('JSON API Deserializer', function () {
             ]
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).eql({
           id: '54735750e16638ba1eee59cb',
           'first-name': 'Sandro',
@@ -661,7 +754,7 @@ describe('JSON API Deserializer', function () {
           }
         };
 
-        var json  = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json }  = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).eql({
           id: '54735750e16638ba1eee59cb'
         });
@@ -678,7 +771,7 @@ describe('JSON API Deserializer', function () {
           }
         };
 
-        var json = new JSONAPIDeserializer().deserialize(dataSet);
+        var { data: json } = new JSONAPIDeserializer().deserialize(dataSet);
         expect(json).to.be.eql({
           'first-name': 'Sandro',
           'last-name': 'Munda'
@@ -703,7 +796,7 @@ describe('JSON API Deserializer', function () {
         }]
       };
 
-      var json = new JSONAPIDeserializer().deserialize(dataSet)
+      var { data: json } = new JSONAPIDeserializer().deserialize(dataSet)
 
       expect(json).to.be.an('array').with.length(2);
       expect(json[0]).to.be.eql({
@@ -763,7 +856,7 @@ describe('JSON API Deserializer', function () {
           }
         }]
       };
-      var json = new JSONAPIDeserializer({keyForAttribute: 'snake_case'}).deserialize(dataSet)
+      var { data: json } = new JSONAPIDeserializer({keyForAttribute: 'snake_case'}).deserialize(dataSet)
 
       expect(json).to.be.an('array').with.length(1);
       expect(json[0]).to.have.key('id', 'first_name', 'last_name', 'address');

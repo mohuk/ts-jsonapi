@@ -1,17 +1,29 @@
 import * as _ from 'lodash';
 import { DeserializerUtils } from './deserializer-utils';
 
+export type Response = {
+  data: any;
+  meta: any
+}
+
 export class Deserializer {
   constructor(
     public opts: any = {}
   ){}
 
-  deserialize(jsonapi: any) {
+  deserialize(jsonapi: any): Response {
+    let response: any = {
+      data: null,
+      meta: DeserializerUtils.caserize(jsonapi.meta || {}, this.opts)
+    };
+
     if (_.isArray(jsonapi.data)) {
-      return this.collection(jsonapi);
+      response.data = this.collection(jsonapi);
     } else {
-      return this.resource(jsonapi);
+      response.data = this.resource(jsonapi);
     }
+
+    return response;
   }
 
   collection(jsonapi: any) {
