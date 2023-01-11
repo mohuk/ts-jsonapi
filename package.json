@@ -29,8 +29,8 @@
     "@types/inflected": "^1.1.29",
     "@types/lodash": "^4.14.37",
     "chai": "^3.5.0",
-    "mocha": "^3.1.2",
-    "mongoose": "^4.6.3",
+    "mocha": "^10.2.0",
+    "mongoose": "^6.8.3",
     "typescript": "^2.1.4"
   },
   "dependencies": {
